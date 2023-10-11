@@ -172,7 +172,40 @@ def traversalWrapper():
 
 def get_next_step(tree):
     #expecting this to be tree that already has all the 0s and emtpy lists
-    if tree[1]:
+    #for getting the next node that needs to be colored
+    print(tree)
+
+    #check if the left child is colored
+    if tree[1]:#mutable lists might make this hard
+        if tree[1][3] == 0:#if left child not colored
+            new_tree = [tree[0], get_next_step(tree[1]), tree[2],0]
+            return new_tree
+        if tree[1][3] == 1:
+            new_tree = [tree[0], get_next_step(tree[1]), tree[2],tree[3]]
+            if new_tree != tree:
+                return new_tree
+            #otherwise, we have colored left child as much as possible
+    if tree[3] == 0:
+        return [tree[0], tree[1], tree[2], 1]
+    
+    if tree[2]:
+        if tree[2][3] == 0:
+            new_tree = [tree[0], tree[1], get_next_step(tree[2]),1]
+            return new_tree
+        if tree[2][3] == 1:
+            new_tree = [tree[0], tree[1], get_next_step(tree[2]),1]
+            if new_tree != tree:
+                return new_tree
+    return tree
+
+    #if 0, recurse on it
+    #if 1, recurse on it, if the result is same as current tree, color yourself and recurse on right
+
+    #if result of recursing on right is same as current tree, return None?
+    #otherwise, return the result
+
+
+    """ if tree[1]:
         if tree[1][3] == 0:
             return [tree[0], get_next_step(tree[1]), tree[2],0]
         else:
@@ -183,7 +216,7 @@ def get_next_step(tree):
 
     if tree[2]:
         if tree[2][3] == 0:
-            return [tree[0], tree[1], get_next_step(tree[2]),1]
+            return [tree[0], tree[1], get_next_step(tree[2]),1] """
     
 
 
@@ -205,10 +238,13 @@ def get_all_steps(tree):
     steps = count_nodes(tree)
     #for i in range(steps+1):
     count = 0
+    previous_tree = []
     #all_trees.append(current_tree)
-    yield current_tree
-    while count < steps + 1:
-        current_tree = get_next_step(current_tree)
+    #yield current_tree
+    while current_tree != previous_tree:
+        previous_tree = current_tree
+        if current_tree is not None:
+            current_tree = get_next_step(current_tree)
         yield current_tree
         count +=1
     
@@ -216,13 +252,40 @@ def get_all_steps(tree):
     #maybe a function to count the number of nodes since that is the max number of
     #steps I'll need using this method
 
+def recursive_drawer(list_of_reps):
+    """
+    For putting in the after
+    """
+    global c
+    c.delete('all')
+    if list_of_reps[0] == None:
+        return None
+    draw_node(c, list_of_reps[0])
+    win.after(2000, recursive_drawer, list_of_reps[1:])
+
+
+
 def in_order_2(tree):
     #expecting well formatted tree
-    global c
-    for element in get_all_steps(tree):
+    queue = [element for element in get_all_steps(tree)]
+    recursive_drawer(queue)
+    """ global c
+    counter = 0
+    draw_node(c, queue[0])
+    win.after(10000,c.delete, "all")  """
+    """ draw_node(c, queue[1])
+    win.after(2000,c.delete, "all") 
+    draw_node(c, queue[2])
+    win.after(2000,c.delete, "all")  """
+
+    """ for element in get_all_steps(tree):
         if element is not None:
-            c.delete("all")
-            win.after(2000,draw_node,c, element)
+            draw_node(c, element)
+            win.after(2000,c.delete, "all") """
+
+    """ counter +=1
+    if counter == 2:
+        break """
             
 
 for element in get_all_steps(insert_empty_lists(insert_zero([8,[1],[2]]))):

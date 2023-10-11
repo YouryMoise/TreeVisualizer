@@ -32,7 +32,7 @@ def find_close_paren(word, index):
 
 def intermediate_string_to_string_list(inputString):
     """
-    Turn a the string from the user into a list of the characters
+    Turn the string from the user into a list of the characters
     (numbers do not get split by their digits)
     Works for floats and ints
     """
@@ -126,6 +126,9 @@ def insert_zero(inputTreeList):
 #print(insert_zero([0,[5,[1,[8.5],[90]],[9,[32],[12]]],[3,[4,[13],[98]],[7,[34],[21]]]]))
 
 def draw_node(canvasObject, x, current_lo = (600,80), current_separation = 1280/6):
+    """
+    Draw a node and its left and right subtrees
+    """
     #x is a list with [node, [left subtree], [right subtree]]
     #maybe include some other value in this list [node, [ls], [rs], chosen]
     #and render it differently based on value of chosen
@@ -149,14 +152,7 @@ def draw_node(canvasObject, x, current_lo = (600,80), current_separation = 1280/
         if x[2]:
             canvasObject.create_line(current_lo[0]+circle_width/2, current_lo[1]+circle_width,current_lo[0]+current_separation+circle_width/2,current_lo[1]+80+20, fill="green", width=5)
             draw_node(canvasObject, x[2], (current_lo[0]+current_separation, current_lo[1]+y_separation), current_separation/2)
-        
-def placeholder_sleep_function():
-    print("waiting")
 
-def traversalWrapper():
-    global name_entry
-    tree = insert_empty_lists(insert_zero(parse_string_to_list(name_entry.get())))
-    in_order_traversal(tree, tree)
 
 #new approach, maybe use generator
 #get all the representations of what the tree will look like during traversals
@@ -171,9 +167,19 @@ def traversalWrapper():
 #[node, recurseResult, [rightChild]]... <- That format
 
 def get_next_step(tree):
+    """
+    To determine the next node that needs to be colored in an in_order traversal
+    """
     #expecting this to be tree that already has all the 0s and emtpy lists
     #for getting the next node that needs to be colored
-    print(tree)
+    
+    #if 0, recurse on it
+    #if 1, recurse on it, if the result is same as current tree, color yourself and recurse on right
+
+    #if result of recursing on right is same as current tree, return None?
+    #otherwise, return the result
+
+
 
     #check if the left child is colored
     if tree[1]:#mutable lists might make this hard
@@ -198,29 +204,10 @@ def get_next_step(tree):
                 return new_tree
     return tree
 
-    #if 0, recurse on it
-    #if 1, recurse on it, if the result is same as current tree, color yourself and recurse on right
-
-    #if result of recursing on right is same as current tree, return None?
-    #otherwise, return the result
-
-
-    """ if tree[1]:
-        if tree[1][3] == 0:
-            return [tree[0], get_next_step(tree[1]), tree[2],0]
-        else:
-            if tree[3] == 0:
-                return [tree[0], tree[1], tree[2],1]
-    if tree[3] == 0:
-        return [tree[0], tree[1], tree[2], 1]
-
-    if tree[2]:
-        if tree[2][3] == 0:
-            return [tree[0], tree[1], get_next_step(tree[2]),1] """
-    
 
 
 def count_nodes(tree):
+    
     #well formatted tree
     number_left = 0
     number_right = 0
@@ -233,20 +220,22 @@ def count_nodes(tree):
 #print(count_nodes(insert_empty_lists(insert_zero(exTree))))
 
 def get_all_steps(tree):
+    """
+    A generator that yields a list representation for what the tree
+    should look like at every step of the in_order traversal
+    """
     #also assuming well-formatted tree
     current_tree = tree
-    steps = count_nodes(tree)
     #for i in range(steps+1):
-    count = 0
     previous_tree = []
     #all_trees.append(current_tree)
     #yield current_tree
+    yield current_tree
     while current_tree != previous_tree:
         previous_tree = current_tree
         if current_tree is not None:
             current_tree = get_next_step(current_tree)
         yield current_tree
-        count +=1
     
     #return all_trees
     #maybe a function to count the number of nodes since that is the max number of
@@ -254,89 +243,21 @@ def get_all_steps(tree):
 
 def recursive_drawer(list_of_reps):
     """
-    For putting in the after
+    For coloring the tree
     """
     global c
     c.delete('all')
     if list_of_reps[0] == None:
         return None
     draw_node(c, list_of_reps[0])
-    win.after(2000, recursive_drawer, list_of_reps[1:])
-
-
-
-def in_order_2(tree):
-    #expecting well formatted tree
-    queue = [element for element in get_all_steps(tree)]
-    recursive_drawer(queue)
-    """ global c
-    counter = 0
-    draw_node(c, queue[0])
-    win.after(10000,c.delete, "all")  """
-    """ draw_node(c, queue[1])
-    win.after(2000,c.delete, "all") 
-    draw_node(c, queue[2])
-    win.after(2000,c.delete, "all")  """
-
-    """ for element in get_all_steps(tree):
-        if element is not None:
-            draw_node(c, element)
-            win.after(2000,c.delete, "all") """
-
-    """ counter +=1
-    if counter == 2:
-        break """
-            
-
-for element in get_all_steps(insert_empty_lists(insert_zero([8,[1],[2]]))):
-    print(element)
-            
-
-
-def in_order_traversal(tree, parentTree):
-    """
-    should check to see if the current node has left children, if so, recurse on them
-    delay 2 seconds, draw this one red and render 
-    """
-    global win
-    global name_entry
-    global c
+    win.after(200, recursive_drawer, list_of_reps[1:])
     
-    treeToRender = name_entry.get()
-    fullTreeToRender = insert_empty_lists(insert_zero(parse_string_to_list(treeToRender)))
-
-
-    if tree[1]:
-        in_order_traversal(tree[1],parentTree)
-    #win.after(2000, placeholder_sleep_function)
-    time.sleep(1)
-    c.delete("all")
-    tree[3] = 1
-    draw_node(c,parentTree)
-
-    #win.after(2000, placeholder_sleep_function)
-    time.sleep(1)
-    if tree[2]:
-        c.delete("all")
-        in_order_traversal(tree[2],parentTree)
-
-    
-
-
-    #also need to clear the canvas
-
-    #call this on the left child if it exists
-    #delay
-    #change the 0 for this to a 1 and render
-    #delay
-    #call this on the right
-    #all of these render name_entry.get() so the whole tree gets rendered every time
-
 
 def in_order_2_wrapper():
     global name_entry
     fixedTree = insert_empty_lists(insert_zero(parse_string_to_list(name_entry.get())))
-    in_order_2(fixedTree)
+    queue = [element for element in get_all_steps(fixedTree)]
+    recursive_drawer(queue)
 
 def onClick():
     global c
@@ -351,9 +272,7 @@ win= Tk()
 win.geometry("900x600")
 #win.attributes('-fullscreen', True)
 
-""" myscrollbar=Scrollbar(win,orient="horizontal")
-myscrollbar.pack(side="bottom",fill="x")
- """
+
 #Create a canvas object
 c= Canvas(win,width=1280, height=720)
 name_entry = tk.Entry(win, text = exTreeString,font=('calibre',10,'normal'))
